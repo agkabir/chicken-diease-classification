@@ -2,7 +2,7 @@ from chickenDieaseClassifier.constants import *
 import os
 from pathlib import Path
 from chickenDieaseClassifier.utils.common import read_yaml, create_directories
-from chickenDieaseClassifier.entity.config_entity import (DataIngestionConfig, PrepareBaseModelConfig, PrepareCallbacksConfig)
+from chickenDieaseClassifier.entity.config_entity import (DataIngestionConfig, PrepareBaseModelConfig, PrepareCallbacksConfig,TrainingConfig)
 
 
 class ConfigurationManager:
@@ -56,6 +56,24 @@ class ConfigurationManager:
         prepare_callbacks_config = PrepareCallbacksConfig(
             root_dir= Path(config.root_dir),
             tensorboard_root_log_dir = Path(config.tensorboard_root_log_dir),
-            checkpoint_model_filepath = Path(config.checkpoint_model_filepath),
+            checkpoint_model_filepath = config.checkpoint_model_filepath,
         )
         return prepare_callbacks_config
+
+    def get_training_config(self) -> TrainingConfig:
+        train_config = self.config.training
+        base_model_config = self.config.prepare_base_model
+        params = self.params
+        create_directories([Path(train_config.root_dir)])
+
+        training_config = TrainingConfig(
+            root_dir = Path(train_config.root_dir),
+            trained_model_path = Path(train_config.trained_model_path),
+            updated_base_model_path = Path(base_model_config.updated_base_model_path),
+            training_data_path = Path(self.config.data_ingestion.unzip_dir),
+            params_epochs = self.params.EPOCHS,
+            params_batch_size = self.params.BATCH_SIZE,
+            params_is_augmentation = self.params.AUGMENTATION,
+            params_image_size = self.params.IMAGE_SIZE
+        )
+        return training_config
